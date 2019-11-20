@@ -2,8 +2,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 
 entity clkUnit is
-  
- generic(facteur : natural);
+
  port (
    clk, reset : in  std_logic;
    enableTX   : out std_logic;
@@ -22,7 +21,7 @@ begin
 		enableTX <= '0';
 	elsif(rising_edge(clk)) then
 		cpt := cpt + 1;
-		if(cpt = facteur) then
+		if(cpt = 16) then
 			enableTX  <= '1';
 			cpt := 0;
 		else			
