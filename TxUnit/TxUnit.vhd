@@ -13,6 +13,12 @@ entity TxUnit is
 end TxUnit;
 
 architecture behavorial of TxUnit is
+type t_etat is (IDLE, CHARGER_REGISTRE, ENVOI_START, 
+					ENVOI_DATA, ENVOI_PAIRE, ENVOI_STOP);  
+					
+signal etat : t_etat;
+
+
 
 begin
 

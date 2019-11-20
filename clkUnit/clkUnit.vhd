@@ -29,7 +29,7 @@ begin
 		end if;
 		enableRX <= '1';
 	elsif(falling_edge(clk)) then 
-		enableRX <= '1'; 
+		enableRX <= '0'; 
 	end if;
 end process;
 end behavorial;
