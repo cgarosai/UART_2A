@@ -25,6 +25,8 @@ begin
 process(clk)
 variable buf : std_logic_vector(7 downto 0);
 variable reg : std_logic_vector(7 downto 0);
+variable cpt : natural; 
+variable bitP : std_logic; -- Bit de parité : Xor entre tous les bits de la transmission.
 begin
 	if(reset = '0') then
 		etat <= IDLE;
@@ -32,11 +34,12 @@ begin
 		regE <= '1';
 		
 	elsif(rising_edge(clk)) then
-		
+-- ////////////////// RESTE la gestion du buffer...	
 		case etat is
 		when IDLE => 
 			bufE <= '1';
 			regE <= '1';
+			txd <= '1';
 			if(enable = '1' and ld = '1') then 
 				etat <= CHARGER_REGISTRE;
 				bufE <= '0';
@@ -45,12 +48,47 @@ begin
 		
 		when CHARGER_REGISTRE => 
 			if(ld = 0 and enable = '1') then
-				bufE = '1';
-				regE = '0';
+				bufE <= '1';
+				regE <= '0';
 				reg <= buf;
 				etat <= ENVOI_START;
 			end if;
 			
+		when ENVOI_START => 
+			if(enable = '1') then
+				etat <= ENVOI_DATA;
+				txd <= '0';
+				cpt := 8;
+				bitP := '0';
+			end if;
+		
+		when ENVOI_DATA => 
+			if(enable = '1') then
+				if(cpt = 0) then
+					etat <= ENVOI_PARITE;
+				else 
+					cpt := cpt - 1;
+					txd <= buf(cpt);
+					bitP := bitP xor buf(cpt); -- Calcul du bit de parité en fonction du bit précédent.
+				end if;
+			end if;
+		
+		when ENVOI_PARITE =>
+			if(enable = '1') then
+				etat <= ENVOI_STOP;
+				txd <= bitP;
+			end if;
+			
+		when ENVOI_STOP =>
+		if(enable = '1') then
+			txd <= '1';
+			regE <= '1';
+			if(bufE = '1') then 
+				etat <= IDLE;
+			else
+				etat <= CHARGER_REGISTRE;
+			end if;
+		end if;
 		end case;
 	end if;
 end process;
