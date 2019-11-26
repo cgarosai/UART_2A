@@ -35,7 +35,6 @@ begin
 		regE <= '1';
 		
 	elsif(rising_edge(clk)) then
--- ////////////////// RESTE la gestion du buffer...	
 		case etat is
 		when IDLE => 
 			bufE <= '1';
