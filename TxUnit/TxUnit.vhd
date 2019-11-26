@@ -15,7 +15,7 @@ end TxUnit;
 architecture behavorial of TxUnit is
 
 type t_etat is (IDLE, CHARGER_REGISTRE, ENVOI_START, 
-					ENVOI_DATA, ENVOI_PAIRE, ENVOI_STOP);  
+					ENVOI_DATA, ENVOI_PARITE, ENVOI_STOP);  
 					
 signal etat : t_etat;
 
@@ -27,6 +27,7 @@ variable buf : std_logic_vector(7 downto 0);
 variable reg : std_logic_vector(7 downto 0);
 variable cpt : natural; 
 variable bitP : std_logic; -- Bit de parité : Xor entre tous les bits de la transmission.
+variable flagBufChange : std_logic := '0'; -- Flag si le buffer change en cours de transmission
 begin
 	if(reset = '0') then
 		etat <= IDLE;
@@ -43,15 +44,16 @@ begin
 			if(enable = '1' and ld = '1') then 
 				etat <= CHARGER_REGISTRE;
 				bufE <= '0';
-				buf <= data;
+				buf := data;
 			end if;
 		
 		when CHARGER_REGISTRE => 
-			if(ld = 0 and enable = '1') then
+			if(ld = '0' and enable = '1') then
 				bufE <= '1';
 				regE <= '0';
-				reg <= buf;
+				reg := buf;
 				etat <= ENVOI_START;
+				flagBufChange := '0';
 			end if;
 			
 		when ENVOI_START => 
@@ -60,16 +62,25 @@ begin
 				txd <= '0';
 				cpt := 8;
 				bitP := '0';
+				if(ld = '1') then 
+					bufE <= '0';
+					buf := data;
+					flagBufChange := '1';
+				end if;
 			end if;
 		
 		when ENVOI_DATA => 
-			if(enable = '1') then
+			if(enable = '1') then 
+				cpt := cpt - 1;
+				txd <= buf(cpt);
+				bitP := bitP xor buf(cpt); -- Calcul du bit de parité en fonction du bit précédent.
 				if(cpt = 0) then
 					etat <= ENVOI_PARITE;
-				else 
-					cpt := cpt - 1;
-					txd <= buf(cpt);
-					bitP := bitP xor buf(cpt); -- Calcul du bit de parité en fonction du bit précédent.
+				end if;
+				if(ld = '1') then 
+					bufE <= '0';
+					buf := data;
+					flagBufChange := '1';
 				end if;
 			end if;
 		
@@ -77,16 +88,28 @@ begin
 			if(enable = '1') then
 				etat <= ENVOI_STOP;
 				txd <= bitP;
+				if(ld = '1') then 
+					bufE <= '0';
+					buf := data;
+					flagBufChange := '1';					
+				end if;
 			end if;
 			
 		when ENVOI_STOP =>
 		if(enable = '1') then
 			txd <= '1';
 			regE <= '1';
-			if(bufE = '1') then 
-				etat <= IDLE;
-			else
+			
+			if(ld = '0') then 
+				if (flagBufChange = '1') then
+					etat <= CHARGER_REGISTRE;
+				else 
+					etat <= IDLE;
+				end if;
+			elsif(ld = '1') then
 				etat <= CHARGER_REGISTRE;
+				bufE <= '0';
+				buf := data;
 			end if;
 		end if;
 		end case;
