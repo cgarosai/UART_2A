@@ -13,6 +13,7 @@ end clkUnit;
 architecture behavorial of clkUnit is
 
 begin
+	enableRX <= clk and reset;
 process(clk)
 	variable cpt : natural := 0;
 begin
@@ -27,9 +28,6 @@ begin
 		else			
 			enableTX <= '0';
 		end if;
-		enableRX <= '1';
-	elsif(falling_edge(clk)) then 
-		enableRX <= '0'; 
 	end if;
 end process;
 end behavorial;
