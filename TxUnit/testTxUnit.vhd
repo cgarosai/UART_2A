@@ -142,7 +142,38 @@ BEGIN
      -- en compte de la demande d'émission d'un second
      -- caractère se fait lorsqu'on émet un premier caractère
      -- et ceci quelque soit l'étape d'émission
-
+	
+		-- On attend deux top d'horloge avant de charger un nouveau caractère.
+     wait until enableTX = '1';
+	  wait until enableTX = '1';
+	  -- Chargment du nouveau caractère.
+	  data <= "01110110";
+     ld <= '1';
+	  wait until enableTX = '1';
+     ld <= '0';
+	  
+	  -- On attend la prochaine phase de charger registre.
+	  wait until regE = '1';
+	  -- On attend deux top d'horloge avant de charger un nouveau caractère.
+     wait until enableTX = '1';
+	  wait until enableTX = '1';
+	  -- Chargment du nouveau caractère.
+	  data <= "11111111";
+     ld <= '1';
+	  wait until enableTX = '1';
+     ld <= '0';
+	  
+	  -- On attend la prochaine phase de charger registre.
+	  wait until regE = '1';
+	  -- On attend deux top d'horloge avant de charger un nouveau caractère.
+     wait until enableTX = '1';
+	  wait until enableTX = '1';
+	  -- Chargment du nouveau caractère.
+	  data <= "00000000";
+     ld <= '1';
+	  wait until enableTX = '1';
+     ld <= '0';
+	  
      wait;
    end process;
 

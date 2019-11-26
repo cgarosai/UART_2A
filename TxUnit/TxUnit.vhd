@@ -72,8 +72,8 @@ begin
 		when ENVOI_DATA => 
 			if(enable = '1') then 
 				cpt := cpt - 1;
-				txd <= buf(cpt);
-				bitP := bitP xor buf(cpt); -- Calcul du bit de parité en fonction du bit précédent.
+				txd <= reg(cpt);
+				bitP := bitP xor reg(cpt); -- Calcul du bit de parité en fonction du bit précédent.
 				if(cpt = 0) then
 					etat <= ENVOI_PARITE;
 				end if;
