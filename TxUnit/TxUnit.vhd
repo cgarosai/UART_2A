@@ -40,14 +40,14 @@ begin
 			bufE <= '1';
 			regE <= '1';
 			txd <= '1';
-			if(enable = '1' and ld = '1') then 
+			if(ld = '1') then 
 				etat <= CHARGER_REGISTRE;
 				bufE <= '0';
 				buf := data;
 			end if;
 		
 		when CHARGER_REGISTRE => 
-			if(ld = '0' and enable = '1') then
+			if(ld = '0') then
 				bufE <= '1';
 				regE <= '0';
 				reg := buf;
