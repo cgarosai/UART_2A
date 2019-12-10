@@ -9,9 +9,9 @@ entity UART_FPGA_N4 is
     -- horloge
     mclk : in std_logic;
     -- les 5 boutons noirs
-   -- btnC : in std_logic;
+    btnC : in std_logic;
    -- le switchs pour reset
-    swt : in std_logic;
+    -- swt : in std_logic;
 	 
 	 RXD : in std_logic;
 	 TXD : out std_logic
@@ -70,7 +70,7 @@ begin
   -- valeurs des sorties (à modifier)
 	Inst_UARTunit: UARTunit PORT MAP(
 		clk => nclk,
-		reset => swt,
+		reset => btnC,
 		cs => cs,
 		rd => rd,
 		wr => wr,
@@ -87,13 +87,13 @@ begin
 	generic map (645)
 	PORT MAP(	
 		clk => mclk,
-		reset => swt,
+		reset => btnC,
 		nclk => nclk
 	);
 	
 	Inst_echoUnit: echoUnit PORT MAP(
 		clk => nclk,
-		reset => swt,
+		reset => btnC,
 		cs => cs,
 		rd => rd,
 		wr => wr,
