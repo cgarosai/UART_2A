@@ -66,6 +66,7 @@ begin
 			if(cpt = 0) then -- Fin du comptage, on repasse à cpt1 en décrémenter le nombre de bits encore à recevoir.
 				cptTrame := cptTrame - 1;
 				etatCpt <= cpt1;
+				cpt := 8;
 			end if;
 			
 			if(cptTrame = 0) then -- Si on a reçu toute la trame (11 bits)
@@ -84,15 +85,19 @@ variable regRecep : std_logic_vector(10 downto 0); -- Le registre sauvegardant l
 variable cptBit : natural; -- Numérotation du bit qui est en réception.
 variable bitParite : std_logic;
 variable DRdyInter : std_logic;
-
+variable frontMontantEn : std_logic;
 begin 
 	if(reset = '0') then
 		etatRecep <= Idle;
+		DRdyInter := '0';
+		DRdy <= '0';
+		OErr <= '0';
+		FErr <= '0';
 	elsif(rising_edge(clk)) then
 		case etatRecep is 
 		when Idle =>
 		
-			if(DRdyInter <= '1') then
+			if(DRdyInter = '1') then
 				if(rd = '0') then 
 					OErr <= '1';
 					DRdy <= '0';
@@ -107,21 +112,29 @@ begin
 					etatRecep <= Reception;
 					cptBit := 10;
 					regRecep(cptBit) := tmprxd;
+					frontMontantEn := '0';
 				end if;	
 			end if;
 
 		when Reception =>
-			if(tmpclk = '1') then 
+			if(tmpclk = '1' and frontMontantEn = '1') then 
+				frontMontantEn := '0';
 				cptBit := cptBit - 1;
 				regRecep(cptBit) := tmprxd;
-				-- Bit de poids fort ou faible en premier ???? 
+				
 				if(cptBit = 0) then
 				-- Verif des bits de stop/parité
 				-- Envoi de la data si c'est bon.
-				
-					bitParite := regRecep(9) xor regRecep(8) xor regRecep(7) xor regRecep(6) xor 
-						regRecep(5) xor regRecep(4) xor regRecep(3) xor regRecep(2);
-					if(bitParite /= regRecep(1)) then
+					bitParite := '0';
+					bitParite := regRecep(2) xor bitParite;
+				   bitParite := regRecep(3) xor bitParite;
+				   bitParite := regRecep(4) xor bitParite;
+				   bitParite := regRecep(5) xor bitParite;
+				   bitParite := regRecep(6) xor bitParite;
+				   bitParite := regRecep(7) xor bitParite;
+				   bitParite := regRecep(8) xor bitParite;
+				   bitParite := regRecep(9) xor bitParite;
+					if(not (bitParite = regRecep(1))) then
 						FErr <= '1';
 					elsif(regRecep(0) = '0') then
 						FErr <= '1';
@@ -132,6 +145,7 @@ begin
 					end if;
 					etatRecep <= Idle;
 				end if;
+			elsif (tmpclk = '0') then frontMontantEn := '1'; 
 			end if; 
 		end case;
 	end if;

@@ -85,9 +85,16 @@ BEGIN
           DRdy => DRdy
         );
 
-   -- Clock process definitions
+   -- Clock process definitions On met enable deux fois plus lent que la clk
    clk_process :process
    begin
+		clk <= '0';
+		enable <= '0';
+		wait for clk_period/2;
+		clk <= '1';
+		wait for clk_period/2;
+		enable <= '1';
+
 		clk <= '0';
 		wait for clk_period/2;
 		clk <= '1';
@@ -98,10 +105,33 @@ BEGIN
    -- Stimulus process
    stim_proc: process
    begin		
+		reset <= '0';
+		rxd <= '0';
       -- hold reset state for 100 ns.
       wait for 100 ns;	
-
-      wait for clk_period*10;
+		reset <= '1';
+		wait for clk_period*4;
+		rxd <= '1';
+		wait for clk_period*10;
+		rxd <= '0';
+		wait for clk_period*64;
+		rxd <= '1';
+		wait for clk_period*32;
+		rxd <= '0';
+		wait for clk_period*32;
+		rxd <= '1';
+		wait for clk_period*32;
+		rxd <= '0';
+		wait for clk_period*32;
+		rxd <= '1';
+		wait for clk_period*32;
+		rxd <= '0';
+		wait for clk_period*32;
+		rxd <= '1';
+		wait for clk_period*32;
+		rxd <= '0';
+		wait for clk_period*32;
+		rxd <= '1';
 
       -- insert stimulus here 
 
