@@ -1,4 +1,4 @@
-----------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 -- Company: 
 -- Engineer:
 --
@@ -32,10 +32,10 @@ USE ieee.std_logic_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 --USE ieee.numeric_std.ALL;
  
-ENTITY RxTestOk IS
-END RxTestOk;
+ENTITY RxTestParite IS
+END RxTestParite;
  
-ARCHITECTURE behavior OF RxTestOk IS 
+ARCHITECTURE behavior OF RxTestParite IS 
  
     -- Component Declaration for the Unit Under Test (UUT)
  
@@ -129,36 +129,16 @@ BEGIN
 		wait for clk_period*32;
 		rxd <= '1';
 		wait for clk_period*32;
-		rxd <= '0';
-		wait for clk_period*32;
-		rxd <= '1';
+		rxd <= '1'; -- Bit de parite erroné
+
 		
 		wait until DRdy = '1';
-
 		wait until DRdy = '0';
 		rd <= '1';
 		wait for clk_period*2;
 		rd <= '0';
       -- insert stimulus here 
-		
-	-- Transmission d'un deuxième octet 00001111
 
-		wait for clk_period*20;
-		rxd <= '0'; -- bit de start + 4x 0
-		wait for clk_period*160;
-		rxd <= '1'; -- 4x 1 
-		wait for clk_period*128;
-		rxd <= '0'; -- bit de parite
-		wait for clk_period*32;
-		rxd <= '1';
-
-		wait until DRdy = '1';
-
-		wait until DRdy = '0';
-		rd <= '1'; -- Laisser rd pendant 2 coups d'horloge est le seul moyen 
-						-- que OErr marche.
-		wait for clk_period*2;
-		rd <= '0';
       wait;
    end process;
 

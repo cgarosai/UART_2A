@@ -86,6 +86,7 @@ variable cptBit : natural; -- Numérotation du bit qui est en réception.
 variable bitParite : std_logic;
 variable DRdyInter : std_logic;
 variable frontMontantEn : std_logic;
+variable flagDrdy : std_logic;-- On en a besoin pour temporisé un coup d'horloge avant de lire RD.
 begin 
 	if(reset = '0') then
 		etatRecep <= Idle;
@@ -93,19 +94,25 @@ begin
 		DRdy <= '0';
 		OErr <= '0';
 		FErr <= '0';
+		flagDrdy := '0';
 	elsif(rising_edge(clk)) then
 		case etatRecep is 
 		when Idle =>
 		
-			if(DRdyInter = '1') then
-				if(rd = '0') then 
-					OErr <= '1';
-					DRdy <= '0';
-					DRdyInter := '0';
-				end if;
-			else 
+			if(DRdyInter = '1') then -- Avec le flag, on temporise lun coup de clock pour bien lire RD.
 				DRdy <= '0';
+				if(flagDrdy = '1') then
+					DrdyInter := '0';
+					flagDrdy := '0';
+					if(rd = '0') then 
+						OErr <= '1';
+					end if;
+				end if;
+				flagDrdy := '1';
+			else
+				flagDrdy := '0';
 				OErr <= '0';
+				DRdy <= '0';
 				FErr <= '0';
 		
 				if(tmpclk = '1') then
@@ -134,9 +141,9 @@ begin
 				   bitParite := regRecep(7) xor bitParite;
 				   bitParite := regRecep(8) xor bitParite;
 				   bitParite := regRecep(9) xor bitParite;
-					if(not (bitParite = regRecep(1))) then
+					if(not (bitParite = regRecep(1))) then --bit de parite
 						FErr <= '1';
-					elsif(regRecep(0) = '0') then
+					elsif(regRecep(0) = '0') then --bit de stop
 						FErr <= '1';
 					else
 						DRdy <= '1';
